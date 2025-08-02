@@ -2,6 +2,7 @@
 // [SECTION_ID]: mode1-scene-animation
 // Purpose: Handles "Practice" mode where the child traces one animal at a time
 
+// [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
 import {
   startTracking,
   stopTracking,
@@ -9,13 +10,13 @@ import {
   isTraceAccurate,
   Point,
   loadAnimalOutline,
-} from '../core/traceEngine';
-import { DEBUG_MODE } from '../config/settings';
+} from '../core/traceEngine.js';
+import { DEBUG_MODE } from '../config/settings.js';
 import {
   showDebugPanel,
   updateTraceCount,
   clearDebugPanel,
-} from '../ui/debugPanel';
+} from '../ui/debugPanel.js';
 
 let ctx: CanvasRenderingContext2D;
 let currentOutline: Point[] = [];

@@ -6,7 +6,8 @@ import {
   DEBUG_MODE,
   TRACE_DISTANCE_THRESHOLD,
   SOUND_ENABLED,
-} from '../config/settings';
+// [AI_EDIT] 2025-08-03 - Added .js extension to config import
+} from '../config/settings.js';
 
 /** A point on the canvas */
 export interface Point {

@@ -10,7 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { DEBUG_MODE, TRACE_DISTANCE_THRESHOLD, SOUND_ENABLED, } from '../config/settings';
+import { DEBUG_MODE, TRACE_DISTANCE_THRESHOLD, SOUND_ENABLED,
+// [AI_EDIT] 2025-08-03 - Added .js extension to config import
+ } from '../config/settings.js';
 // Keep the canvas reference so we can remove listeners later
 let activeCanvas = null;
 // Holds the points traced by the user's finger

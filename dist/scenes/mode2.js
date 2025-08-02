@@ -10,8 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { startTracking, stopTracking, drawOutline, isTraceAccurate, loadAnimalOutline, } from '../core/traceEngine';
-import { DEBUG_MODE } from '../config/settings';
+// [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
+import { startTracking, stopTracking, drawOutline, isTraceAccurate, loadAnimalOutline, } from '../core/traceEngine.js';
+import { DEBUG_MODE } from '../config/settings.js';
 // Canvas drawing context
 let ctx;
 // Animals currently visible

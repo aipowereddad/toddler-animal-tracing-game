@@ -2,6 +2,7 @@
 // [SECTION_ID]: intermediate-mode-multitrace
 // Purpose: Handles "Intermediate" mode where 2–3 animals can be traced in any order
 
+// [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
 import {
   startTracking,
   stopTracking,
@@ -9,8 +10,8 @@ import {
   isTraceAccurate,
   loadAnimalOutline,
   Point,
-} from '../core/traceEngine';
-import { DEBUG_MODE } from '../config/settings';
+} from '../core/traceEngine.js';
+import { DEBUG_MODE } from '../config/settings.js';
 
 /** Represents one animal currently on the screen */
 interface ActiveAnimal {
