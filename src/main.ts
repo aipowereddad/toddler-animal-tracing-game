@@ -40,26 +40,28 @@ function setupCanvas(): HTMLCanvasElement {
 }
 
 // ===== SECTION: start-button-menu-setup =====
-// [SECTION_ID]: ui-start-button-menu
-// Purpose: Handle Start button click and hide menu
-function setupMenu(canvas: HTMLCanvasElement): void {
-  const button = document.getElementById('start-btn') as HTMLButtonElement | null;
-  if (!button) {
-    console.error('[UI] Start button not found');
-    return;
-  }
-  button.addEventListener('click', () => {
-    startPracticeMode(canvas);
+// [SECTION_ID]: ui-start-button-logic
+// Purpose: Attach Start button to Practice Mode launch
+
+/**
+ * Hooks the Start button so the game begins only when tapped.
+ */
+function setupMenu(): void {
+  const btn = document.getElementById('start-btn');
+  btn?.addEventListener('click', () => {
+    startPracticeMode();
     const menu = document.getElementById('menu');
-    if (menu) {
-      menu.style.display = 'none';
-    }
+    if (menu) menu.style.display = 'none';
   });
 }
+// [AI_EDIT] 2025-02-21 - Added start button listener for Practice Mode
 
 // Wait for the page to load before initializing
 window.addEventListener('load', () => {
   const canvas = setupCanvas();
   startGameLoop(canvas);
-  setupMenu(canvas);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  setupMenu();
 });
