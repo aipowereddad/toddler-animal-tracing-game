@@ -5,17 +5,14 @@
 import { DEBUG_MODE } from './config/settings';
 import { startGameLoop } from './core/gameLoop';
 import { startPracticeMode } from './scenes/mode1';
-import { startIntermediateMode } from './scenes/mode2';
 
 /**
- * Creates a canvas element that fills the screen and resizes with the window.
+ * Configures the on-page canvas to fill the screen.
  * Shows a debug banner if DEBUG_MODE is true.
  */
 function setupCanvas(): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.id = 'trace-game-canvas';
+  const canvas = document.getElementById('trace-game-canvas') as HTMLCanvasElement;
   document.body.style.margin = '0';
-  document.body.appendChild(canvas);
 
   const resize = () => {
     canvas.width = window.innerWidth;
@@ -42,40 +39,27 @@ function setupCanvas(): HTMLCanvasElement {
   return canvas;
 }
 
+// ===== SECTION: start-button-menu-setup =====
+// [SECTION_ID]: ui-start-button-menu
+// Purpose: Handle Start button click and hide menu
+function setupMenu(canvas: HTMLCanvasElement): void {
+  const button = document.getElementById('start-btn') as HTMLButtonElement | null;
+  if (!button) {
+    console.error('[UI] Start button not found');
+    return;
+  }
+  button.addEventListener('click', () => {
+    startPracticeMode(canvas);
+    const menu = document.getElementById('menu');
+    if (menu) {
+      menu.style.display = 'none';
+    }
+  });
+}
+
 // Wait for the page to load before initializing
 window.addEventListener('load', () => {
   const canvas = setupCanvas();
   startGameLoop(canvas);
-
-  // ===== SECTION: fallback-mode-autostart =====
-  // [SECTION_ID]: fallback-mode-autostart
-  // Purpose: Auto-start Practice Mode if no mode is selected manually
-  const global = window as typeof window & {
-    __modeStarted?: boolean;
-    practiceMode?: () => void;
-    intermediateMode?: () => void;
-  };
-
-  // Preserve any flag set before this script runs
-  global.__modeStarted = global.__modeStarted ?? false;
-
-  // Expose manual launchers for developer testing
-  global.practiceMode = () => {
-    global.__modeStarted = true;
-    startPracticeMode(canvas);
-  };
-  global.intermediateMode = () => {
-    global.__modeStarted = true;
-    startIntermediateMode(canvas);
-  };
-
-  // [AI_EDIT] 2025-08-02 - Added fallback auto-start for Practice Mode
-
-  // If no mode has been launched manually, start Practice Mode
-  if (!global.__modeStarted) {
-    if (DEBUG_MODE) {
-      console.log('▶️ Auto-starting Practice Mode (fallback)');
-    }
-    global.practiceMode();
-  }
+  setupMenu(canvas);
 });

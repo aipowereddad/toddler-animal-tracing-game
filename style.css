@@ -1,0 +1,42 @@
+/* ===== FILE: style.css ===== */
+/* [SECTION_ID]: ui-start-button-menu */
+/* Purpose: Style the start menu button for a toddler-friendly UI */
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+#menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff7cc;
+}
+
+#start-btn {
+  font-size: 2rem;
+  padding: 1rem 2rem;
+  background: #ff7f50;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+#start-btn:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+  #start-btn {
+    font-size: 1.5rem;
+    padding: 0.75rem 1.5rem;
+  }
+}
