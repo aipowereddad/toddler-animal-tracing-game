@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- ===== FILE: index.html ===== -->
-<!-- [SECTION_ID]: ui-start-button-menu -->
-<!-- Purpose: Entry page with start menu and game canvas -->
+<!-- [SECTION_ID]: ui-home-screen -->
+<!-- Purpose: Landing screen with title and mode buttons -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -10,12 +10,17 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ===== SECTION: start-button-menu ===== -->
-  <!-- [SECTION_ID]: ui-start-button-menu -->
-  <div id="menu">
-    <button id="start-btn">Start Practice Mode</button>
+  <!-- ===== SECTION: home-screen ===== -->
+  <!-- [SECTION_ID]: ui-home-screen -->
+  <div id="home-screen">
+    <h1>Toddler Animal Tracing Game</h1>
+    <p class="subtitle">Trace the shapes. Meet the animals.</p>
+    <p class="onboarding">👋 Ready to trace?</p>
+    <button id="practice-btn" class="mode-btn">Start Practice Mode</button>
+    <button id="intermediate-btn" class="mode-btn" disabled>Start Intermediate Mode</button>
   </div>
   <canvas id="trace-game-canvas"></canvas>
   <script type="module" src="src/main.ts"></script>
+  <!-- [AI_EDIT] 2025-02-24 - Created home screen with mode buttons -->
 </body>
 </html>
