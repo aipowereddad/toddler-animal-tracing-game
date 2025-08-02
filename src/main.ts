@@ -4,6 +4,8 @@
 
 import { DEBUG_MODE } from './config/settings';
 import { startGameLoop } from './core/gameLoop';
+import { startPracticeMode } from './scenes/mode1';
+import { startIntermediateMode } from './scenes/mode2';
 
 /**
  * Creates a canvas element that fills the screen and resizes with the window.
@@ -44,4 +46,36 @@ function setupCanvas(): HTMLCanvasElement {
 window.addEventListener('load', () => {
   const canvas = setupCanvas();
   startGameLoop(canvas);
+
+  // ===== SECTION: fallback-mode-autostart =====
+  // [SECTION_ID]: fallback-mode-autostart
+  // Purpose: Auto-start Practice Mode if no mode is selected manually
+  const global = window as typeof window & {
+    __modeStarted?: boolean;
+    practiceMode?: () => void;
+    intermediateMode?: () => void;
+  };
+
+  // Preserve any flag set before this script runs
+  global.__modeStarted = global.__modeStarted ?? false;
+
+  // Expose manual launchers for developer testing
+  global.practiceMode = () => {
+    global.__modeStarted = true;
+    startPracticeMode(canvas);
+  };
+  global.intermediateMode = () => {
+    global.__modeStarted = true;
+    startIntermediateMode(canvas);
+  };
+
+  // [AI_EDIT] 2025-08-02 - Added fallback auto-start for Practice Mode
+
+  // If no mode has been launched manually, start Practice Mode
+  if (!global.__modeStarted) {
+    if (DEBUG_MODE) {
+      console.log('▶️ Auto-starting Practice Mode (fallback)');
+    }
+    global.practiceMode();
+  }
 });
