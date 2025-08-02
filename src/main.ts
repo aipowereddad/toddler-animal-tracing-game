@@ -39,22 +39,31 @@ function setupCanvas(): HTMLCanvasElement {
   return canvas;
 }
 
-// ===== SECTION: start-button-menu-setup =====
-// [SECTION_ID]: ui-start-button-logic
-// Purpose: Attach Start button to Practice Mode launch
+// ===== SECTION: home-screen-setup =====
+// [SECTION_ID]: ui-home-screen
+// Purpose: Attach Practice Mode button and hide landing screen
 
 /**
- * Hooks the Start button so the game begins only when tapped.
+ * Hooks the Practice Mode button so the game begins only when tapped.
  */
-function setupMenu(): void {
-  const btn = document.getElementById('start-btn');
+function setupHomeScreen(): void {
+  const btn = document.getElementById('practice-btn');
+  const home = document.getElementById('home-screen');
+  const canvas = document.getElementById('trace-game-canvas') as HTMLCanvasElement;
   btn?.addEventListener('click', () => {
-    startPracticeMode();
-    const menu = document.getElementById('menu');
-    if (menu) menu.style.display = 'none';
+    startPracticeMode(canvas);
+    if (DEBUG_MODE) {
+      console.log('[DEBUG] 🎮 Practice mode started');
+    }
+    if (home) {
+      home.classList.add('fade-out');
+      setTimeout(() => {
+        home.style.display = 'none';
+      }, 500);
+    }
   });
 }
-// [AI_EDIT] 2025-02-21 - Added start button listener for Practice Mode
+// [AI_EDIT] 2025-02-24 - Added home screen logic for Practice Mode
 
 // Wait for the page to load before initializing
 window.addEventListener('load', () => {
@@ -63,5 +72,5 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  setupMenu();
+  setupHomeScreen();
 });
