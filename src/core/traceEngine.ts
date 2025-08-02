@@ -56,6 +56,59 @@ export function stopTracking(): Point[] {
   return completedPath;
 }
 
+// ===== SECTION: render-outline =====
+// [SECTION_ID]: render-outline
+// Purpose: Draw placeholder animal outlines on the canvas
+
+/** Bright color used for sample outlines */
+const OUTLINE_COLOR = '#ff8800';
+
+/** Width of the outline stroke */
+const OUTLINE_WIDTH = 6;
+
+/**
+ * Draws an outline path on the canvas.
+ * points: array of {x, y} describing the shape. If empty, a simple square is used.
+ */
+export function drawOutline(
+  ctx: CanvasRenderingContext2D,
+  points: Point[]
+): void {
+  // If no points are provided, use a default square shape as a stand-in animal
+  const shape = points.length
+    ? points
+    : [
+        { x: 100, y: 100 },
+        { x: 200, y: 100 },
+        { x: 200, y: 200 },
+        { x: 100, y: 200 },
+      ];
+
+  // Set a toddler-friendly stroke style
+  ctx.strokeStyle = OUTLINE_COLOR;
+  ctx.lineWidth = OUTLINE_WIDTH;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // Begin the outline path
+  ctx.beginPath();
+  ctx.moveTo(shape[0].x, shape[0].y);
+
+  // Connect each point to form the outline
+  for (let i = 1; i < shape.length; i++) {
+    ctx.lineTo(shape[i].x, shape[i].y);
+  }
+
+  // Close the path and draw it to the screen
+  ctx.closePath();
+  ctx.stroke();
+
+  // Helpful debug output for developers
+  if (DEBUG_MODE) {
+    console.log('Animal outline rendered');
+  }
+}
+
 /** Returns the current finger path */
 export function getTracePath(): Point[] {
   return tracePath;
