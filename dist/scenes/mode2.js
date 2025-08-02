@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
-import { startTracking, stopTracking, drawOutline, isTraceAccurate, loadAnimalOutline, } from '../core/traceEngine.js';
+import { startTracking, updateTrace, endTracking, drawOutline, isTraceAccurate, loadAnimalOutline, } from '../core/traceEngine.js';
 import { DEBUG_MODE } from '../config/settings.js';
 // Canvas drawing context
 let ctx;
@@ -27,10 +27,13 @@ let nextAnimalIndex = 0;
  */
 export function startMode2(canvas) {
     ctx = canvas.getContext('2d');
+    canvas.addEventListener('touchstart', startTracking);
+    canvas.addEventListener('touchmove', updateTrace);
     canvas.addEventListener('touchend', onTraceEnd);
-    void loadInitialAnimals().then(() => {
-        startTracking(canvas);
-    });
+    canvas.addEventListener('mousedown', startTracking);
+    canvas.addEventListener('mousemove', updateTrace);
+    canvas.addEventListener('mouseup', onTraceEnd);
+    void loadInitialAnimals();
 }
 // ===== SECTION: mode-wrappers-export =====
 // [SECTION_ID]: mode-wrappers-export
@@ -106,15 +109,14 @@ function redrawAll(animated) {
     });
 }
 /**
- * Called when the child's finger lifts off the screen.
+ * Called when the pointer lifts off the screen.
  * Checks the trace against each animal outline.
  */
-function onTraceEnd() {
-    // Ignore new traces while an animation is running
+function onTraceEnd(event) {
     if (activeAnimals.some((a) => a.animating)) {
         return;
     }
-    const path = stopTracking();
+    const path = endTracking(event);
     for (let i = 0; i < activeAnimals.length; i++) {
         const animal = activeAnimals[i];
         if (isTraceAccurate(animal.outline, path)) {
@@ -123,8 +125,6 @@ function onTraceEnd() {
             return;
         }
     }
-    // No match found; allow the child to try again
-    startTracking(ctx.canvas);
 }
 /**
  * Animates the traced animal off-screen and loads a new one in its place.
@@ -144,7 +144,6 @@ function animateAndReplace(index) {
             void loadAnimalIntoSlot(index).then(() => {
                 activeAnimals[index].animating = false;
                 redrawAll();
-                startTracking(ctx.canvas);
             });
         }
         else {

@@ -5,6 +5,7 @@
 import { DEBUG_MODE } from './config/settings.js';
 import { startGameLoop } from './core/gameLoop.js';
 import { startPracticeMode } from './scenes/mode1.js';
+// [AI_EDIT] 2025-08-03 - Applied devicePixelRatio scaling for sharper canvas
 /**
  * Configures the on-page canvas to fill the screen.
  * Shows a debug banner if DEBUG_MODE is true.
@@ -13,8 +14,13 @@ function setupCanvas() {
     const canvas = document.getElementById('trace-game-canvas');
     document.body.style.margin = '0';
     const resize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const ratio = window.devicePixelRatio || 1;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        const ctx = canvas.getContext('2d');
+        ctx === null || ctx === void 0 ? void 0 : ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     };
     window.addEventListener('resize', resize);
     resize();

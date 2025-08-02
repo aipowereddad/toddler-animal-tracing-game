@@ -5,13 +5,15 @@
 // [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
 import {
   startTracking,
-  stopTracking,
+  updateTrace,
+  endTracking,
   drawOutline,
   isTraceAccurate,
   loadAnimalOutline,
   Point,
 } from '../core/traceEngine.js';
 import { DEBUG_MODE } from '../config/settings.js';
+// [AI_EDIT] 2025-08-03 - Added mouse listeners for tracing
 
 /** Represents one animal currently on the screen */
 interface ActiveAnimal {
@@ -46,11 +48,14 @@ let nextAnimalIndex = 0;
 export function startMode2(canvas: HTMLCanvasElement): void {
   ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
+  canvas.addEventListener('touchstart', startTracking);
+  canvas.addEventListener('touchmove', updateTrace);
   canvas.addEventListener('touchend', onTraceEnd);
+  canvas.addEventListener('mousedown', startTracking);
+  canvas.addEventListener('mousemove', updateTrace);
+  canvas.addEventListener('mouseup', onTraceEnd);
 
-  void loadInitialAnimals().then(() => {
-    startTracking(canvas);
-  });
+  void loadInitialAnimals();
 }
 
 // ===== SECTION: mode-wrappers-export =====
@@ -136,16 +141,15 @@ function redrawAll(animated?: { index: number; shift: number }): void {
 }
 
 /**
- * Called when the child's finger lifts off the screen.
+ * Called when the pointer lifts off the screen.
  * Checks the trace against each animal outline.
  */
-function onTraceEnd(): void {
-  // Ignore new traces while an animation is running
+function onTraceEnd(event: MouseEvent | TouchEvent): void {
   if (activeAnimals.some((a) => a.animating)) {
     return;
   }
 
-  const path = stopTracking();
+  const path = endTracking(event);
 
   for (let i = 0; i < activeAnimals.length; i++) {
     const animal = activeAnimals[i];
@@ -155,9 +159,6 @@ function onTraceEnd(): void {
       return;
     }
   }
-
-  // No match found; allow the child to try again
-  startTracking(ctx.canvas);
 }
 
 /**
@@ -180,7 +181,6 @@ function animateAndReplace(index: number): void {
       void loadAnimalIntoSlot(index).then(() => {
         activeAnimals[index].animating = false;
         redrawAll();
-        startTracking(ctx.canvas);
       });
     } else {
       requestAnimationFrame(step);
