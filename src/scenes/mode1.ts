@@ -10,10 +10,16 @@ import {
   Point,
 } from '../core/traceEngine';
 import { DEBUG_MODE } from '../config/settings';
+import {
+  showDebugPanel,
+  updateTraceCount,
+  clearDebugPanel,
+} from '../ui/debugPanel';
 
 let ctx: CanvasRenderingContext2D;
 let currentOutline: Point[] = [];
 let animating = false;
+let traceCount = 0;
 
 // ===== SECTION: practice-mode-reward-tracking =====
 // [SECTION_ID]: practice-mode-reward-tracking
@@ -63,6 +69,8 @@ export function startMode1(canvas: HTMLCanvasElement): void {
   ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
   canvas.addEventListener('touchend', onTraceEnd);
+  canvas.addEventListener('touchstart', onTraceStart);
+  canvas.addEventListener('touchmove', onTraceMove);
 
   setupRewardDisplay(canvas);
   loadNextAnimal();
@@ -82,6 +90,13 @@ function loadNextAnimal(): void {
   }
 
   drawOutline(ctx, currentOutline);
+
+  traceCount = 0;
+  showDebugPanel({
+    mode: 'Practice',
+    animal: `shape-${animalIndex + 1}`,
+    tracePoints: traceCount,
+  });
 
   animalIndex = (animalIndex + 1) % animals.length;
 }
@@ -133,6 +148,22 @@ function rewardEarned(): void {
 // [AI_EDIT] 2025-02-15 - Added star reward tracking overlay
 
 /**
+ * Resets the trace counter when the child begins a new touch.
+ */
+function onTraceStart(): void {
+  traceCount = 0;
+  updateTraceCount(traceCount);
+}
+
+/**
+ * Tracks how many points the child has drawn in this attempt.
+ */
+function onTraceMove(): void {
+  traceCount++;
+  updateTraceCount(traceCount);
+}
+
+/**
  * Called when the player's finger lifts off the screen.
  * Checks the trace and triggers the exit animation if successful.
  */
@@ -171,6 +202,7 @@ function animateExit(): void {
       if (DEBUG_MODE) {
         console.log('✅ Trace complete – animal exited');
       }
+      clearDebugPanel();
       rewardEarned();
       setTimeout(() => {
         loadNextAnimal();
@@ -183,3 +215,5 @@ function animateExit(): void {
 
   requestAnimationFrame(step);
 }
+
+// [AI_EDIT] 2025-02-17 - Hooked debug overlay into practice mode
