@@ -2,12 +2,53 @@
 // [SECTION_ID]: mode1-scene-animation
 // Purpose: Handles "Practice" mode where the child traces one animal at a time
 
-import { startTracking, stopTracking, drawOutline, isTraceAccurate, Point } from '../core/traceEngine';
+import {
+  startTracking,
+  stopTracking,
+  drawOutline,
+  isTraceAccurate,
+  Point,
+} from '../core/traceEngine';
 import { DEBUG_MODE } from '../config/settings';
 
 let ctx: CanvasRenderingContext2D;
 let currentOutline: Point[] = [];
 let animating = false;
+
+// ===== SECTION: practice-mode-animal-cycle =====
+// [SECTION_ID]: practice-mode-animal-cycle
+// Purpose: Cycle through placeholder animal outlines for practice mode
+
+/** Local list of simple placeholder animals */
+const animals: Point[][] = [
+  // shape-1: square
+  [
+    { x: 100, y: 100 },
+    { x: 200, y: 100 },
+    { x: 200, y: 200 },
+    { x: 100, y: 200 },
+  ],
+  // shape-2: triangle
+  [
+    { x: 150, y: 50 },
+    { x: 250, y: 200 },
+    { x: 50, y: 200 },
+  ],
+  // shape-3: circle approximation
+  [
+    { x: 150, y: 50 },
+    { x: 200, y: 75 },
+    { x: 225, y: 125 },
+    { x: 200, y: 175 },
+    { x: 150, y: 200 },
+    { x: 100, y: 175 },
+    { x: 75, y: 125 },
+    { x: 100, y: 75 },
+  ],
+];
+
+// Index of the next animal to load
+let animalIndex = 0;
 
 /**
  * Initializes Mode 1 on the provided canvas.
@@ -22,17 +63,20 @@ export function startMode1(canvas: HTMLCanvasElement): void {
 }
 
 /**
- * Loads the next animal outline (placeholder square for now).
+ * Loads the next animal outline from the local placeholder list.
  */
 function loadNextAnimal(): void {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  currentOutline = [
-    { x: 100, y: 100 },
-    { x: 200, y: 100 },
-    { x: 200, y: 200 },
-    { x: 100, y: 200 },
-  ];
+
+  currentOutline = animals[animalIndex];
+
+  if (DEBUG_MODE) {
+    console.log(`👉 Loading next animal: shape-${animalIndex + 1}`);
+  }
+
   drawOutline(ctx, currentOutline);
+
+  animalIndex = (animalIndex + 1) % animals.length;
 }
 
 /**
@@ -74,8 +118,10 @@ function animateExit(): void {
       if (DEBUG_MODE) {
         console.log('✅ Trace complete – animal exited');
       }
-      loadNextAnimal();
-      startTracking(ctx.canvas);
+      setTimeout(() => {
+        loadNextAnimal();
+        startTracking(ctx.canvas);
+      }, 500);
     } else {
       requestAnimationFrame(step);
     }
