@@ -1,9 +1,10 @@
 // ===== FILE: main.ts =====
 // [SECTION_ID]: canvas-init-main
 // Purpose: Initialize the full-screen canvas and kick off the game loop
-import { DEBUG_MODE } from './config/settings';
-import { startGameLoop } from './core/gameLoop';
-import { startPracticeMode } from './scenes/mode1';
+// [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
+import { DEBUG_MODE } from './config/settings.js';
+import { startGameLoop } from './core/gameLoop.js';
+import { startPracticeMode } from './scenes/mode1.js';
 /**
  * Configures the on-page canvas to fill the screen.
  * Shows a debug banner if DEBUG_MODE is true.

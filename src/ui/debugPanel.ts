@@ -2,7 +2,8 @@
 // [SECTION_ID]: debug-overlay-mode1
 // Purpose: Display a developer overlay with live game information
 
-import { DEBUG_MODE } from '../config/settings';
+// [AI_EDIT] 2025-08-03 - Added .js extension to config import
+import { DEBUG_MODE } from '../config/settings.js';
 
 /** Information shown on the debug panel */
 interface DebugInfo {
