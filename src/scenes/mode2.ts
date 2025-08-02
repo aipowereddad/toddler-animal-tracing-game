@@ -52,6 +52,22 @@ export function startMode2(canvas: HTMLCanvasElement): void {
   });
 }
 
+// ===== SECTION: mode-wrappers-export =====
+// [SECTION_ID]: mode-wrappers-export
+// Purpose: Expose a simple wrapper to launch game modes externally
+
+/**
+ * Wrapper to start Intermediate Mode — multi-animal tracing mode.
+ */
+export function startIntermediateMode(canvas: HTMLCanvasElement): void {
+  if (DEBUG_MODE) {
+    console.log('▶️ Intermediate Mode started');
+  }
+  return startMode2(canvas);
+}
+
+// [AI_EDIT] 2025-02-20 - Added intermediate mode wrapper for external launch
+
 /**
  * Loads 2 or 3 animals and draws them spaced apart on the canvas.
  */

@@ -54,6 +54,22 @@ export function startMode1(canvas: HTMLCanvasElement): void {
   });
 }
 
+// ===== SECTION: mode-wrappers-export =====
+// [SECTION_ID]: mode-wrappers-export
+// Purpose: Expose a simple wrapper to launch game modes externally
+
+/**
+ * Wrapper to start Practice Mode — single-animal tracing mode.
+ */
+export function startPracticeMode(canvas: HTMLCanvasElement): void {
+  if (DEBUG_MODE) {
+    console.log('▶️ Practice Mode started');
+  }
+  return startMode1(canvas);
+}
+
+// [AI_EDIT] 2025-02-20 - Added practice mode wrapper for external launch
+
 /**
  * Loads the next animal outline from assets and draws it.
  */
