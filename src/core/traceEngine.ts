@@ -6,7 +6,7 @@ import {
   DEBUG_MODE,
   TRACE_DISTANCE_THRESHOLD,
   SOUND_ENABLED,
-// [AI_EDIT] 2025-08-03 - Added .js extension to config import
+  // [AI_EDIT] 2025-08-03 - Added .js extension to config import
 } from '../config/settings.js';
 
 /** A point on the canvas */
@@ -52,39 +52,61 @@ function playSound(sound: HTMLAudioElement): void {
 }
 
 /**
- * Starts listening for finger input on the given canvas.
- * A new empty path is created on touchstart.
+ * Converts a mouse or touch event into canvas coordinates.
+ * [AI_EDIT] 2025-08-03 - Unified mouse and touch input handling
  */
-export function startTracking(canvas: HTMLCanvasElement): void {
-  activeCanvas = canvas;
-
-  // When the child touches the screen, begin a new path
-  canvas.addEventListener('touchstart', handleTouchStart);
-  // Add points as the finger moves across the screen
-  canvas.addEventListener('touchmove', handleTouchMove);
-  // Finish the path when the finger lifts off the screen
-  canvas.addEventListener('touchend', handleTouchEnd);
+function eventToPoint(
+  event: MouseEvent | TouchEvent,
+  canvas: HTMLCanvasElement
+): Point {
+  const rect = canvas.getBoundingClientRect();
+  const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+  const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+  return { x: clientX - rect.left, y: clientY - rect.top };
 }
 
 /**
- * Stops listening for finger input and returns the path that was traced.
+ * Begins a new trace path when the child first touches or clicks the canvas.
  */
-export function stopTracking(): Point[] {
-  if (!activeCanvas) {
+export function startTracking(event: MouseEvent | TouchEvent): void {
+  activeCanvas = event.target as HTMLCanvasElement;
+  tracePath = [];
+  isTracing = true;
+
+  playSound(startSound);
+  tracePath.push(eventToPoint(event, activeCanvas));
+
+  console.log(`[INPUT] ${event.type}`);
+}
+
+/**
+ * Records points as the finger or mouse moves across the canvas.
+ */
+export function updateTrace(event: MouseEvent | TouchEvent): void {
+  if (!isTracing || !activeCanvas) {
+    return;
+  }
+
+  tracePath.push(eventToPoint(event, activeCanvas));
+
+  if (DEBUG_MODE) {
+    console.log(`[INPUT] ${event.type}`);
+  }
+}
+
+/**
+ * Ends the current trace and returns the completed path.
+ */
+export function endTracking(event: MouseEvent | TouchEvent): Point[] {
+  if (!isTracing) {
     return tracePath;
   }
 
-  activeCanvas.removeEventListener('touchstart', handleTouchStart);
-  activeCanvas.removeEventListener('touchmove', handleTouchMove);
-  activeCanvas.removeEventListener('touchend', handleTouchEnd);
+  isTracing = false;
+  console.log(`[INPUT] ${event.type} – points: ${tracePath.length}`);
 
   const completedPath = tracePath;
-
-  if (DEBUG_MODE) {
-    console.log(`[TRACE] Tracking stopped with ${completedPath.length} points`);
-  }
-
-  activeCanvas = null;
+  tracePath = [];
   return completedPath;
 }
 
@@ -93,7 +115,7 @@ export function stopTracking(): Point[] {
 // Purpose: Draw placeholder animal outlines on the canvas
 
 /** Bright color used for sample outlines */
-const OUTLINE_COLOR = '#ff8800';
+const OUTLINE_COLOR = '#ff9900';
 
 /** Width of the outline stroke */
 const OUTLINE_WIDTH = 6;
@@ -141,65 +163,9 @@ export function drawOutline(
   }
 }
 
-/** Returns the current finger path */
+/** Returns the most recent trace path */
 export function getTracePath(): Point[] {
   return tracePath;
-}
-
-/**
- * Handle the start of a touch event.
- * Clears the previous path and records the first point.
- */
-function handleTouchStart(event: TouchEvent): void {
-  if (!activeCanvas) {
-    return;
-  }
-
-  isTracing = true;
-  tracePath = [];
-
-  playSound(startSound);
-
-  const touch = event.touches[0];
-  const rect = activeCanvas.getBoundingClientRect();
-  tracePath.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
-
-  if (DEBUG_MODE) {
-    console.log('[TRACE] Started new path');
-  }
-}
-
-/**
- * Handle finger movement across the screen.
- * Each move adds a point to the path array.
- */
-function handleTouchMove(event: TouchEvent): void {
-  if (!isTracing || !activeCanvas) {
-    return;
-  }
-
-  const touch = event.touches[0];
-  const rect = activeCanvas.getBoundingClientRect();
-  tracePath.push({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
-}
-
-/**
- * Handle the end of a touch event.
- * Stops tracking and optionally logs the number of points collected.
- */
-function handleTouchEnd(): void {
-  if (!isTracing) {
-    return;
-  }
-
-  isTracing = false;
-
-  if (DEBUG_MODE) {
-    console.log(`[TRACE] Finger lifted with ${tracePath.length} points`);
-  }
-
-  // Automatically stop tracking to remove listeners
-  stopTracking();
 }
 
 // ===== SECTION: trace-validation =====

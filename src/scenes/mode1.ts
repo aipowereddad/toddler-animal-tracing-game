@@ -5,13 +5,15 @@
 // [AI_EDIT] 2025-08-03 - Added .js extensions for browser module support
 import {
   startTracking,
-  stopTracking,
+  updateTrace,
+  endTracking,
   drawOutline,
   isTraceAccurate,
   Point,
   loadAnimalOutline,
 } from '../core/traceEngine.js';
 import { DEBUG_MODE } from '../config/settings.js';
+// [AI_EDIT] 2025-08-03 - Added mouse support and outline scaling
 import {
   showDebugPanel,
   updateTraceCount,
@@ -40,19 +42,51 @@ const animalNames = ['lion', 'elephant', 'giraffe', 'monkey'];
 let animalIndex = 0;
 
 /**
+ * Scales and centers outline points to fit the canvas.
+ */
+function fitOutlineToCanvas(points: Point[], canvas: HTMLCanvasElement): Point[] {
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.width / dpr;
+  const height = canvas.height / dpr;
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  points.forEach((p) => {
+    minX = Math.min(minX, p.x);
+    maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y);
+    maxY = Math.max(maxY, p.y);
+  });
+
+  const shapeWidth = maxX - minX;
+  const shapeHeight = maxY - minY;
+  const scale = Math.min((width * 0.8) / shapeWidth, (height * 0.8) / shapeHeight);
+  const offsetX = (width - shapeWidth * scale) / 2;
+  const offsetY = (height - shapeHeight * scale) / 2;
+
+  return points.map((p) => ({
+    x: (p.x - minX) * scale + offsetX,
+    y: (p.y - minY) * scale + offsetY,
+  }));
+}
+
+/**
  * Initializes Mode 1 on the provided canvas.
  */
 export function startMode1(canvas: HTMLCanvasElement): void {
   ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-  canvas.addEventListener('touchend', onTraceEnd);
-  canvas.addEventListener('touchstart', onTraceStart);
-  canvas.addEventListener('touchmove', onTraceMove);
+  canvas.addEventListener('touchstart', handleStart);
+  canvas.addEventListener('touchmove', handleMove);
+  canvas.addEventListener('touchend', handleEnd);
+  canvas.addEventListener('mousedown', handleStart);
+  canvas.addEventListener('mousemove', handleMove);
+  canvas.addEventListener('mouseup', handleEnd);
 
   setupRewardDisplay(canvas);
-  void loadNextAnimal().then(() => {
-    startTracking(canvas);
-  });
+  void loadNextAnimal();
 }
 
 // ===== SECTION: mode-wrappers-export =====
@@ -84,7 +118,7 @@ async function loadNextAnimal(): Promise<void> {
     animalIndex = (animalIndex + 1) % animalNames.length;
 
     if (points.length > 0) {
-      currentOutline = points;
+      currentOutline = fitOutlineToCanvas(points, ctx.canvas);
 
       if (DEBUG_MODE) {
         console.log(`👉 Loading next animal: ${name}`);
@@ -152,36 +186,35 @@ function rewardEarned(): void {
 // [AI_EDIT] 2025-02-15 - Added star reward tracking overlay
 
 /**
- * Resets the trace counter when the child begins a new touch.
+ * Handles the beginning of a new trace path.
  */
-function onTraceStart(): void {
+function handleStart(event: MouseEvent | TouchEvent): void {
   traceCount = 0;
   updateTraceCount(traceCount);
+  startTracking(event);
 }
 
 /**
- * Tracks how many points the child has drawn in this attempt.
+ * Handles pointer movement and updates the trace counter.
  */
-function onTraceMove(): void {
+function handleMove(event: MouseEvent | TouchEvent): void {
+  updateTrace(event);
   traceCount++;
   updateTraceCount(traceCount);
 }
 
 /**
- * Called when the player's finger lifts off the screen.
+ * Called when the player's finger or mouse lifts off the screen.
  * Checks the trace and triggers the exit animation if successful.
  */
-function onTraceEnd(): void {
+function handleEnd(event: MouseEvent | TouchEvent): void {
   if (animating) {
     return;
   }
 
-  const tracedPath = stopTracking();
+  const tracedPath = endTracking(event);
   if (isTraceAccurate(currentOutline, tracedPath)) {
     animateExit();
-  } else {
-    // Allow the child to try again
-    startTracking(ctx.canvas);
   }
 }
 
@@ -209,9 +242,7 @@ function animateExit(): void {
       clearDebugPanel();
       rewardEarned();
       setTimeout(() => {
-        void loadNextAnimal().then(() => {
-          startTracking(ctx.canvas);
-        });
+        void loadNextAnimal();
       }, 800);
     } else {
       requestAnimationFrame(step);

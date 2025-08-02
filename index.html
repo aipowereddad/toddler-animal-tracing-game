@@ -13,17 +13,23 @@
   <!-- ===== SECTION: home-screen ===== -->
   <!-- [SECTION_ID]: ui-home-screen -->
   <div id="home-screen">
-    <h1>Toddler Animal Tracing Game</h1>
-    <p class="subtitle">Trace the shapes. Meet the animals.</p>
-    <p class="onboarding">👋 Ready to trace?</p>
-    <button id="practice-btn" class="mode-btn">Start Practice Mode</button>
-    <button id="intermediate-btn" class="mode-btn" disabled>Start Intermediate Mode</button>
+    <div class="home-card">
+      <div class="mascot" aria-hidden="true">🦁</div>
+      <h1>Toddler Animal Tracing Game</h1>
+      <p class="subtitle">Trace the shapes. Meet the animals.</p>
+      <button id="practice-btn" class="mode-btn">🐾 Practice Mode</button>
+      <button id="intermediate-btn" class="mode-btn" disabled>Intermediate Mode</button>
+    </div>
   </div>
   <canvas id="trace-game-canvas"></canvas>
+  <footer id="legal-footer">
+    <nav><a href="#">Privacy</a> | <a href="#">Terms</a></nav>
+  </footer>
   <!-- [SECTION_ID]: github-pages-ts-fix -->
   <!-- Load compiled JavaScript for GitHub Pages -->
   <script type="module" src="dist/main.js"></script>
   <!-- [AI_EDIT] 2025-02-24 - Created home screen with mode buttons -->
   <!-- [AI_EDIT] 2025-08-02 - Switched to compiled JS for GitHub Pages runtime fix -->
+  <!-- [AI_EDIT] 2025-08-03 - Redesigned home screen and added footer -->
 </body>
 </html>
