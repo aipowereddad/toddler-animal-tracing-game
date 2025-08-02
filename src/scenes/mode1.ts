@@ -15,6 +15,12 @@ let ctx: CanvasRenderingContext2D;
 let currentOutline: Point[] = [];
 let animating = false;
 
+// ===== SECTION: practice-mode-reward-tracking =====
+// [SECTION_ID]: practice-mode-reward-tracking
+// Purpose: Track stars earned in this practice session and display them
+let completedCount = 0;
+let starDisplay: HTMLDivElement | null = null;
+
 // ===== SECTION: practice-mode-animal-cycle =====
 // [SECTION_ID]: practice-mode-animal-cycle
 // Purpose: Cycle through placeholder animal outlines for practice mode
@@ -58,6 +64,7 @@ export function startMode1(canvas: HTMLCanvasElement): void {
 
   canvas.addEventListener('touchend', onTraceEnd);
 
+  setupRewardDisplay(canvas);
   loadNextAnimal();
   startTracking(canvas);
 }
@@ -78,6 +85,52 @@ function loadNextAnimal(): void {
 
   animalIndex = (animalIndex + 1) % animals.length;
 }
+
+/**
+ * Creates the on-screen star counter if it doesn't exist.
+ * canvas: HTMLCanvasElement where Mode 1 is running
+ */
+function setupRewardDisplay(canvas: HTMLCanvasElement): void {
+  if (starDisplay) {
+    return;
+  }
+  if (canvas.parentElement) {
+    canvas.parentElement.style.position = 'relative';
+  }
+  starDisplay = document.createElement('div');
+  starDisplay.id = 'practice-star-counter';
+  starDisplay.textContent = 'Stars: 0';
+  starDisplay.style.position = 'absolute';
+  starDisplay.style.top = '10px';
+  starDisplay.style.left = '10px';
+  starDisplay.style.fontFamily = 'sans-serif';
+  starDisplay.style.fontSize = '20px';
+  starDisplay.style.color = '#ffcc00';
+  starDisplay.style.transform = 'scale(1)';
+  starDisplay.style.transition = 'transform 0.3s ease';
+  canvas.parentElement?.appendChild(starDisplay);
+}
+
+/**
+ * Increments the star count and updates the counter with a small pop effect.
+ */
+function rewardEarned(): void {
+  completedCount++;
+  if (starDisplay) {
+    starDisplay.textContent = `Stars: ${completedCount}`;
+    starDisplay.style.transform = 'scale(1.3)';
+    setTimeout(() => {
+      if (starDisplay) {
+        starDisplay.style.transform = 'scale(1)';
+      }
+    }, 300);
+  }
+  if (DEBUG_MODE) {
+    console.log(`⭐ Total stars earned: ${completedCount}`);
+  }
+}
+
+// [AI_EDIT] 2025-02-15 - Added star reward tracking overlay
 
 /**
  * Called when the player's finger lifts off the screen.
@@ -118,6 +171,7 @@ function animateExit(): void {
       if (DEBUG_MODE) {
         console.log('✅ Trace complete – animal exited');
       }
+      rewardEarned();
       setTimeout(() => {
         loadNextAnimal();
         startTracking(ctx.canvas);
