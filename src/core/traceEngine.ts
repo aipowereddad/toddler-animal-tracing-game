@@ -2,7 +2,7 @@
 // [SECTION_ID]: finger-input-tracking
 // Purpose: Track finger input on the canvas and record the path traced by the user
 
-import { DEBUG_MODE } from '../config/settings';
+import { DEBUG_MODE, TRACE_DISTANCE_THRESHOLD } from '../config/settings';
 
 /** A point on the canvas */
 export interface Point {
@@ -166,5 +166,85 @@ function handleTouchEnd(): void {
 
   // Automatically stop tracking to remove listeners
   stopTracking();
+}
+
+// ===== SECTION: trace-validation =====
+// [SECTION_ID]: trace-validation
+// Purpose: Compare the player's trace against the target outline and determine accuracy
+// [AI_EDIT] 2025-08-02 - Implemented trace accuracy checking
+
+/**
+ * Determines if a user's trace is close enough to the outline to count as correct.
+ * outline: array of outline points
+ * userPath: array of points traced by the player
+ * Returns true if at least 80% of the user's points are near the outline
+ */
+export function isTraceAccurate(
+  outline: Point[],
+  userPath: Point[]
+): boolean {
+  // Early exit if there is nothing to compare
+  if (outline.length === 0 || userPath.length === 0) {
+    return false;
+  }
+
+  // Square of the allowed distance for quick comparisons
+  const thresholdSq = TRACE_DISTANCE_THRESHOLD * TRACE_DISTANCE_THRESHOLD;
+
+  // Keep track of how many user points are close enough to the outline
+  let hitCount = 0;
+
+  // Outline index advances as we find matches to avoid checking the full list
+  let outlineIndex = 0;
+
+  // Limit how far ahead we scan within the outline for each user point
+  const searchWindow = 10;
+
+  for (const p of userPath) {
+    let found = false;
+    // Only check a small range of outline points for performance
+    for (
+      let i = outlineIndex;
+      i < outline.length && i < outlineIndex + searchWindow;
+      i++
+    ) {
+      const dx = p.x - outline[i].x;
+      const dy = p.y - outline[i].y;
+      if (dx * dx + dy * dy <= thresholdSq) {
+        hitCount++;
+        outlineIndex = i; // move forward to this match
+        found = true;
+        break;
+      }
+    }
+    if (!found && outlineIndex > 0) {
+      // allow slight backtracking by checking previous points once
+      for (
+        let j = outlineIndex - 1;
+        j >= 0 && outlineIndex - j <= searchWindow;
+        j--
+      ) {
+        const dx2 = p.x - outline[j].x;
+        const dy2 = p.y - outline[j].y;
+        if (dx2 * dx2 + dy2 * dy2 <= thresholdSq) {
+          hitCount++;
+          outlineIndex = j;
+          break;
+        }
+      }
+    }
+  }
+
+  // Calculate how many of the user's points were close to the outline
+  const accuracy = hitCount / userPath.length;
+  const percent = Math.round(accuracy * 100);
+  const passed = accuracy >= 0.8;
+
+  if (DEBUG_MODE) {
+    const status = passed ? 'SUCCESS' : 'TRY AGAIN';
+    console.log(`[TRACE] Trace accuracy: ${percent}% – ${status}`);
+  }
+
+  return passed;
 }
 
