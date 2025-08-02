@@ -285,3 +285,33 @@ export function isTraceAccurate(
   return passed;
 }
 
+// ===== SECTION: load-animal-outline =====
+// [SECTION_ID]: load-animal-outline
+// Purpose: Load animal outlines from JSON files
+
+/**
+ * Loads an animal outline from the assets folder.
+ * name: short animal identifier (e.g. 'lion')
+ * Returns: Promise resolving to an array of {x, y} points.
+ */
+export async function loadAnimalOutline(name: string): Promise<Point[]> {
+  try {
+    const response = await fetch(`assets/animals/${name}.json`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const points: Point[] = await response.json();
+
+    if (DEBUG_MODE) {
+      console.log(`✅ Loaded animal: ${name} with ${points.length} points`);
+    }
+
+    return points;
+  } catch {
+    console.log(`⚠️ Failed to load animal: ${name}`);
+    return [];
+  }
+}
+
+// [AI_EDIT] 2025-02-18 - Added animal outline loader
+

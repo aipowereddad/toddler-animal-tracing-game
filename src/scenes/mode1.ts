@@ -8,6 +8,7 @@ import {
   drawOutline,
   isTraceAccurate,
   Point,
+  loadAnimalOutline,
 } from '../core/traceEngine';
 import { DEBUG_MODE } from '../config/settings';
 import {
@@ -29,35 +30,10 @@ let starDisplay: HTMLDivElement | null = null;
 
 // ===== SECTION: practice-mode-animal-cycle =====
 // [SECTION_ID]: practice-mode-animal-cycle
-// Purpose: Cycle through placeholder animal outlines for practice mode
+// Purpose: Cycle through real animal outlines loaded from assets
 
-/** Local list of simple placeholder animals */
-const animals: Point[][] = [
-  // shape-1: square
-  [
-    { x: 100, y: 100 },
-    { x: 200, y: 100 },
-    { x: 200, y: 200 },
-    { x: 100, y: 200 },
-  ],
-  // shape-2: triangle
-  [
-    { x: 150, y: 50 },
-    { x: 250, y: 200 },
-    { x: 50, y: 200 },
-  ],
-  // shape-3: circle approximation
-  [
-    { x: 150, y: 50 },
-    { x: 200, y: 75 },
-    { x: 225, y: 125 },
-    { x: 200, y: 175 },
-    { x: 150, y: 200 },
-    { x: 100, y: 175 },
-    { x: 75, y: 125 },
-    { x: 100, y: 75 },
-  ],
-];
+/** Ordered list of animal outline file names */
+const animalNames = ['lion', 'elephant', 'giraffe', 'monkey'];
 
 // Index of the next animal to load
 let animalIndex = 0;
@@ -73,32 +49,43 @@ export function startMode1(canvas: HTMLCanvasElement): void {
   canvas.addEventListener('touchmove', onTraceMove);
 
   setupRewardDisplay(canvas);
-  loadNextAnimal();
-  startTracking(canvas);
+  void loadNextAnimal().then(() => {
+    startTracking(canvas);
+  });
 }
 
 /**
- * Loads the next animal outline from the local placeholder list.
+ * Loads the next animal outline from assets and draws it.
  */
-function loadNextAnimal(): void {
+async function loadNextAnimal(): Promise<void> {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  currentOutline = animals[animalIndex];
+  let attempts = 0;
+  while (attempts < animalNames.length) {
+    const name = animalNames[animalIndex];
+    const points = await loadAnimalOutline(name);
+    animalIndex = (animalIndex + 1) % animalNames.length;
 
-  if (DEBUG_MODE) {
-    console.log(`👉 Loading next animal: shape-${animalIndex + 1}`);
+    if (points.length > 0) {
+      currentOutline = points;
+
+      if (DEBUG_MODE) {
+        console.log(`👉 Loading next animal: ${name}`);
+      }
+
+      drawOutline(ctx, currentOutline);
+
+      traceCount = 0;
+      showDebugPanel({
+        mode: 'Practice',
+        animal: name,
+        tracePoints: traceCount,
+      });
+      return;
+    }
+
+    attempts++;
   }
-
-  drawOutline(ctx, currentOutline);
-
-  traceCount = 0;
-  showDebugPanel({
-    mode: 'Practice',
-    animal: `shape-${animalIndex + 1}`,
-    tracePoints: traceCount,
-  });
-
-  animalIndex = (animalIndex + 1) % animals.length;
 }
 
 /**
@@ -205,9 +192,10 @@ function animateExit(): void {
       clearDebugPanel();
       rewardEarned();
       setTimeout(() => {
-        loadNextAnimal();
-        startTracking(ctx.canvas);
-      }, 500);
+        void loadNextAnimal().then(() => {
+          startTracking(ctx.canvas);
+        });
+      }, 800);
     } else {
       requestAnimationFrame(step);
     }
@@ -215,5 +203,5 @@ function animateExit(): void {
 
   requestAnimationFrame(step);
 }
-
+// [AI_EDIT] 2025-02-18 - Replaced placeholder shapes with real animal outlines
 // [AI_EDIT] 2025-02-17 - Hooked debug overlay into practice mode
