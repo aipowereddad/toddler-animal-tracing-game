@@ -2,7 +2,11 @@
 // [SECTION_ID]: finger-input-tracking
 // Purpose: Track finger input on the canvas and record the path traced by the user
 
-import { DEBUG_MODE, TRACE_DISTANCE_THRESHOLD } from '../config/settings';
+import {
+  DEBUG_MODE,
+  TRACE_DISTANCE_THRESHOLD,
+  SOUND_ENABLED,
+} from '../config/settings';
 
 /** A point on the canvas */
 export interface Point {
@@ -18,6 +22,33 @@ let tracePath: Point[] = [];
 
 // Flag to indicate when the child is tracing
 let isTracing = false;
+
+// ===== SECTION: sound-effects =====
+// [SECTION_ID]: trace-sound-effects
+// Purpose: Provide audio feedback for trace interactions
+
+/** Sound played when tracing begins */
+const startSound = new Audio('src/assets/sounds/traceStart.mp3');
+
+/** Sound played when a trace is successfully matched */
+const successSound = new Audio('src/assets/sounds/traceSuccess.mp3');
+
+/**
+ * Plays the provided sound if sound effects are enabled.
+ */
+function playSound(sound: HTMLAudioElement): void {
+  if (!SOUND_ENABLED) {
+    return;
+  }
+  sound.currentTime = 0;
+  sound.play().catch(() => {
+    /* ignore playback failures */
+  });
+
+  if (DEBUG_MODE) {
+    console.log(`[SOUND] Played ${sound.src.split('/').pop()}`);
+  }
+}
 
 /**
  * Starts listening for finger input on the given canvas.
@@ -125,6 +156,8 @@ function handleTouchStart(event: TouchEvent): void {
 
   isTracing = true;
   tracePath = [];
+
+  playSound(startSound);
 
   const touch = event.touches[0];
   const rect = activeCanvas.getBoundingClientRect();
@@ -243,6 +276,10 @@ export function isTraceAccurate(
   if (DEBUG_MODE) {
     const status = passed ? 'SUCCESS' : 'TRY AGAIN';
     console.log(`[TRACE] Trace accuracy: ${percent}% – ${status}`);
+  }
+
+  if (passed) {
+    playSound(successSound);
   }
 
   return passed;
